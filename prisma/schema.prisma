@@ -1,0 +1,94 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ========== Core Models ==========
+
+enum Role {
+  FARMER
+  EXPERT
+  ADMIN
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String?
+  phone     String?  @unique
+  role      Role     @default(FARMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  images      UploadedImage[]
+  predictions Prediction[]
+}
+
+enum SeverityLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model Disease {
+  id            String        @id @default(uuid())
+  nameEn        String        @unique
+  nameAr        String        @unique
+  descriptionEn String?
+  descriptionAr String?
+  severityLevel SeverityLevel @default(LOW)
+  createdAt     DateTime      @default(now())
+
+  treatments  Treatment[]
+  predictions Prediction[]
+}
+
+model Treatment {
+  id            String   @id @default(uuid())
+  diseaseId     String
+  disease       Disease  @relation(fields: [diseaseId], references: [id])
+  titleEn       String
+  titleAr       String
+  descriptionEn String?
+  descriptionAr String?
+  isChemical    Boolean  @default(false)
+  createdAt     DateTime @default(now())
+}
+
+model UploadedImage {
+  id         String   @id @default(uuid())
+  userId     String?
+  url        String
+  filename   String
+  mimeType   String
+  size       Int
+  uploadedAt DateTime @default(now())
+
+  user       User?       @relation(fields: [userId], references: [id])
+  prediction Prediction?
+}
+
+model Prediction {
+  id          String   @id @default(uuid())
+  imageId     String   @unique
+  userId      String?
+  diseaseId   String
+  confidence  Float
+  severity    String?
+  predictedAt DateTime @default(now())
+
+  image   UploadedImage @relation(fields: [imageId], references: [id])
+  user    User?         @relation(fields: [userId], references: [id])
+  disease Disease       @relation(fields: [diseaseId], references: [id])
+}
