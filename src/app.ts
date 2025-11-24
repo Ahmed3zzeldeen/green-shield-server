@@ -2,9 +2,11 @@
 import express from "express";
 import cors from "cors";
 import path from "path";
-import authRoutes from "./routes/authRoutes";
 import corsOptions from "./config/corsOptions";
 import { errorHandler } from "./middleware/errorHandler";
+
+import authRoutes from "./routes/authRoutes";
+import imageRoutes from "./routes/imageRoutes";
 
 const app = express();
 
@@ -19,6 +21,7 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/images", imageRoutes);
 
 
 app.use(errorHandler);
