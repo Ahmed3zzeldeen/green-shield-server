@@ -6,6 +6,7 @@ An intelligent mobile + backend system that helps farmers instantly detect maize
 This repository contains the **backend server** (Node.js + TypeScript + Express + Prisma) for the **Green Shield** project — a 5-week capstone initiative started on November 17, 2025.
 
 ### Core Features
+
 - Leaf image upload & processing (`multipart/form-data`)
 - AI inference endpoint (integrates with TensorFlow Lite / Python model)
 - Disease identification with confidence score & severity
@@ -14,11 +15,13 @@ This repository contains the **backend server** (Node.js + TypeScript + Express 
 - Ready for mobile app integration (React Native)
 
 ### Dataset
+
 Built exclusively on:  
 [Corn or Maize Leaf Disease Dataset – Kaggle](https://www.kaggle.com/datasets/smaranjitghose/corn-or-maize-leaf-disease-dataset)  
 Classes: `Healthy`, `Common Rust`, `Gray Leaf Spot`, `Blight`
 
 ## Tech Stack
+
 - **Language**: TypeScript
 - **Framework**: Express.js
 - **Database**: PostgreSQL
@@ -29,6 +32,7 @@ Classes: `Healthy`, `Common Rust`, `Gray Leaf Spot`, `Blight`
 - **Deployment**: Render / Railway (free tier)
 
 ## Folder Structure
+
 ```text
 ├── prisma/
 |   └── schema.prisma           → Database schema (User, Disease, Prediction, etc.)
@@ -45,6 +49,7 @@ Classes: `Healthy`, `Common Rust`, `Gray Leaf Spot`, `Blight`
 |   └── schema.prisma           → Full database schema (User, Disease, Prediction, etc.)
 
 ```
+
 ## How to Setup Instructions
 
 ```bash
@@ -62,9 +67,12 @@ cp .env.example .env
 # 4. Run migrations
 npx prisma migrate dev
 
-# 5. Seed maize diseases (with Arabic translations)
-npx tsx prisma/seed/diseases.seed.ts
+# 5. Run generation (after each migration)
+npx prisma generate
 
-# 6. Start development server
+# 6. Seed maize diseases (with Arabic translations)
+npx tsx src/seed/diseases.seed.ts
+
+# 7. Start development server
 npm run dev
 ```

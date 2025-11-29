@@ -1,8 +1,12 @@
-import { PrismaClient, Role } from '../generated/prisma';
+import { Role } from "../generated/prisma";
+import { prisma } from "../lib/prisma";
 
-const prisma = new PrismaClient();
-
-export const createUser = async (data: { email: string; password: string; name: string; role?: Role }) => {
+export const createUser = async (data: {
+  email: string;
+  password: string;
+  name: string;
+  role?: Role;
+}) => {
   return prisma.user.create({ data });
 };
 
