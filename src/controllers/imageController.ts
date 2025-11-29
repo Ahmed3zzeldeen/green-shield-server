@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "../generated/prisma";
-import path from "path";
+import { prisma } from "../lib/prisma";
 
-const prisma = new PrismaClient();
+//? found the import but don't know what for so I commented it
+// import path from "path";
 
 /**
  * POST /api/images/upload

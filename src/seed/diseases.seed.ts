@@ -1,5 +1,5 @@
-import { PrismaClient } from '../generated/prisma';
-const prisma = new PrismaClient();
+import { SeverityLevel } from "../generated/prisma";
+import { prisma } from "../lib/prisma";
 
 const diseases = [
   {
@@ -12,7 +12,8 @@ const diseases = [
   {
     nameEn: "Common Rust",
     nameAr: "الصدأ الشائع",
-    descriptionEn: "Caused by Puccinia sorghi. Orange-brown pustules on leaves.",
+    descriptionEn:
+      "Caused by Puccinia sorghi. Orange-brown pustules on leaves.",
     descriptionAr: "يسببه فطر Puccinia sorghi. بقع برتقالية بنية على الأوراق.",
     severityLevel: "Medium",
   },
@@ -26,21 +27,31 @@ const diseases = [
   {
     nameEn: "Blight",
     nameAr: "لفحة الأوراق",
-    descriptionEn: "Northern Corn Leaf Blight (Exserohilum turcicum). Long gray-green lesions.",
+    descriptionEn:
+      "Northern Corn Leaf Blight (Exserohilum turcicum). Long gray-green lesions.",
     descriptionAr: "لفحة شمال الذرة. آفات طويلة رمادية خضراء.",
     severityLevel: "High",
   },
 ];
 
 async function main() {
-  for (const d of diseases)  {
+  for (const d of diseases) {
+    const level = d.severityLevel.toUpperCase() as SeverityLevel;
     await prisma.disease.upsert({
       where: { nameEn: d.nameEn },
       update: {},
-      create: d,
+      create: {
+        nameEn: d.nameEn,
+        nameAr: d.nameAr,
+        descriptionEn: d.descriptionEn,
+        descriptionAr: d.descriptionAr,
+        severityLevel: level,
+      },
     });
   }
   console.log("Seeded 4 diseases + Healthy");
 }
 
-main().catch(e => console.error(e)).finally(() => prisma.$disconnect());
+main()
+  .catch((e) => console.error(e))
+  .finally(() => prisma.$disconnect());
