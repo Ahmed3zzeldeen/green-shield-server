@@ -76,6 +76,20 @@ export const changePasswordValidation = [
     ),
 ];
 
+export const sendVerificationEmailValidation = [
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Valid email is required'),
+];
+
+export const confirmEmailValidation = [
+  body('emailVerificationOtp')
+    .isLength({ min: 6, max: 6 })
+    .withMessage('Verification code must be 6 digits'),
+];
+
+
 export const signup = async (req: Request, res: Response) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -124,6 +138,25 @@ export const signup = async (req: Request, res: Response) => {
       city: role === 'GOVERNMENT' ? city : null,
     },
   });
+
+  try {
+    const otp = generateOTP();
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        emailVerificationOtp: hashOTP(otp),
+        emailVerificationExpires: new Date(Date.now() + 10 * 60 * 1000),
+      },
+    });
+
+    await new Email(
+      { email: user.email, firstName: user.firstName },
+      otp
+    ).sendEmailVerification();
+  } catch (error) {
+    // we skipped failure because email verification is (non-critical)
+    console.log('Failed to send verification email (non-critical):', error);
+  }
 
   const accessToken = generateAccessToken({ id: user.id, role: user.role });
   const refreshToken = generateRefreshToken({ id: user.id });
@@ -408,4 +441,105 @@ export const changePassword = async (
   } catch (error) {
     return next(AppError.create('Failed to change password', 500));
   }
+};
+
+export const sendVerificationEmail = async (req: Request, res: Response, next: NextFunction) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(AppError.create(errors.array().map(err => err.msg).join(', '), 400));
+  }
+  const { email } = req.body;
+
+  if (!email) {
+    return next(AppError.create('Email is required', 400));
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true, firstName: true, email: true, isEmailVerified: true },
+  });
+
+  if (!user) {
+    return sendResponse(res, 200, {
+      message: 'If your email is registered, a verification code has been sent.',
+      data: null,
+    });
+  }
+
+  if (user.isEmailVerified) {
+    return sendResponse(res, 400, {
+      message: 'Email is already verified',
+      data: null,
+    });
+  }
+
+  const otp = generateOTP();
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      emailVerificationOtp: hashOTP(otp),
+      emailVerificationExpires: expiresAt,
+    },
+  });
+
+  try {
+    await new Email(user, otp).sendEmailVerification();
+
+    return sendResponse(res, 200, {
+      message: 'Verification code sent to your email',
+      data: null,
+    });
+  } catch (error) {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        emailVerificationOtp: null,
+        emailVerificationExpires: null,
+      },
+    });
+    return next(AppError.create('Failed to send verification email', 500));
+  }
+};
+
+export const resendVerificationEmail = async (req: Request, res: Response, next: NextFunction) => {
+  return sendVerificationEmail(req, res, next);
+};
+
+export const confirmEmail = async (req: Request, res: Response, next: NextFunction) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(AppError.create(errors.array().map(err => err.msg).join(', '), 400));
+  }
+
+  const { emailVerificationOtp } = req.body;
+  const hashedOtp = hashOTP(emailVerificationOtp);
+
+  const user = await prisma.user.findFirst({
+    where: {
+      emailVerificationOtp: hashedOtp,
+      emailVerificationExpires: {
+        gt: new Date(),
+      },
+    },
+  });
+
+  if (!user) {
+    return next(AppError.create('Invalid or expired verification code', 400));
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      isEmailVerified: true,
+      emailVerificationOtp: null,
+      emailVerificationExpires: null,
+    },
+  });
+
+  return sendResponse(res, 200, {
+    message: 'Email verified successfully',
+    data: null,
+  });
 };
