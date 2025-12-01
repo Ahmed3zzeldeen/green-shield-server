@@ -1,0 +1,22 @@
+extends baseEmail
+
+block content
+  tr
+    td.wrapper(style='font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top; box-sizing: border-box; padding: 24px;', valign='top')
+      p Hi #{firstName},
+      
+      p Welcome to Green Shield! Please verify your email address to activate your account.
+
+      p Your verification code is:
+
+      div(style='text-align: center; margin: 32px 0;')
+        span(style='font-size: 36px; font-weight: bold; letter-spacing: 10px; color: #22c55e; background: #f0fdf4; padding: 20px 32px; border-radius: 12px; border: 3px dashed #22c55e; display: inline-block;')
+          | #{otp}
+
+      p This code expires in <strong>10 minutes</strong>.
+      p Enter it in the app to complete registration.
+
+      p If you didnot create an account, you can safely ignore this email.
+
+      p Thanks,
+      p The Green Shield Team
