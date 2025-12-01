@@ -319,7 +319,7 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
   }
 
   const otp = generateOTP();
-  const expiresAt = new Date(Date.now() + 1 * 60 * 1000); // 10 min
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 min
 
   await prisma.user.update({
     where: { id: user.id },
