@@ -41,10 +41,10 @@ model User {
   isEmailVerified Boolean @default(false)
   avatar          String? @default("/avatars/default.png")
 
-  emailVerificationOtp     String?   @db.VarChar(6)
+  emailVerificationOtp     String?   @db.Text
   emailVerificationExpires DateTime?
 
-  resetPasswordOtp     String?   @db.VarChar(6)
+  resetPasswordOtp     String?   @db.Text
   resetPasswordExpires DateTime? @db.Timestamptz
 
   createdAt DateTime  @default(now())
