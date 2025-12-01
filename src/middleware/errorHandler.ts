@@ -1,8 +1,28 @@
-import { Request, Response, NextFunction } from 'express';
-import { sendResponse } from '../utils/response';
+import { Request, Response } from "express";
 
-export const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
-  console.error(err);
-  const status = err.status || 500;
-  sendResponse(res, status, { message: err.message || 'Internal Server Error' });
+class AppError extends Error {
+  statusCode: number | undefined;
+  status: boolean | undefined;
+
+  create(message: string, statusCode: number, status?: boolean) {
+    this.message = message;
+    this.statusCode = statusCode;
+    this.status = status || (statusCode < 500 ? true : false);
+    return this;
+  }
+}
+
+export const errorHandler = (error: AppError, req: Request, res: Response) => {
+  const statusCode = error.statusCode || 500;
+  const status = error.status || statusCode < 500 ? true : false;
+  const message = error.message || "Internal Server Error";
+
+  return res.status(statusCode || 500).json({
+    status: status,
+    message: message,
+    code: statusCode || 500,
+    data: null,
+  });
 };
+
+export default new AppError() as AppError;
