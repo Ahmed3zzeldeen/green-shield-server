@@ -24,6 +24,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/images", imageRoutes);
 
 
+// Error Handling Middleware
 app.use(errorHandler);
 
 app.get("/", (req, res) => {
