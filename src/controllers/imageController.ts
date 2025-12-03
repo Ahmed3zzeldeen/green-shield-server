@@ -73,7 +73,7 @@ export const getImageById = async (req: Request, res: Response) => {
         filename: true,
         size: true,
         uploadedAt: true,
-        user: { select: { id: true, name: true } },
+        user: { select: { id: true, firstName: true, lastName: true } },
       },
     });
 

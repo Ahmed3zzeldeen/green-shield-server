@@ -24,7 +24,10 @@ app.use("/api/auth", authRoutes);
 app.use("/api/images", imageRoutes);
 
 
-app.use(errorHandler);
+// Error Handling Middleware
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  errorHandler(err, req, res);
+});
 
 app.get("/", (req, res) => {
   res.send("Welcome to the Green Shield Project API");

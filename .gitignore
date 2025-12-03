@@ -10,6 +10,5 @@ dist/
 *.env.test.local
 *.env.production.local
 src/generated/
-prisma/migrations/
 
 /uploads/*

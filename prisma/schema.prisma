@@ -15,21 +15,43 @@ datasource db {
 // ========== Core Models ==========
 
 enum Role {
-  FARMER
-  EXPERT
   ADMIN
+  FARMER
+  GOVERNMENT
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
+  id        String @id @default(uuid())
+  firstName String
+  lastName  String
+  email     String @unique
+  username  String @unique
   password  String
-  name      String?
-  phone     String?  @unique
-  role      Role     @default(FARMER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  role      Role   @default(FARMER)
 
+  // Conditional fields
+  farmName    String?
+  farmAddress String?
+  state       String?
+  city        String?
+  longitude   Float?
+  latitude    Float?
+
+  // Verification & metadata
+  isEmailVerified Boolean @default(false)
+  avatar          String? @default("/avatars/default.png")
+
+  emailVerificationOtp     String?   @db.Text
+  emailVerificationExpires DateTime?
+
+  resetPasswordOtp     String?   @db.Text
+  resetPasswordExpires DateTime? @db.Timestamptz
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  // Relations
   images      UploadedImage[]
   predictions Prediction[]
 }
