@@ -1,4 +1,4 @@
-import { SeverityLevel } from "../generated/prisma";
+import { SeverityLevel } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 
 const diseases = [

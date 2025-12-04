@@ -4,12 +4,14 @@
   "description": "Green Shield Project Server is a backend application built with TypeScript, Express, and Prisma to provide RESTful APIs for the Green Shield Project.",
   "scripts": {
     "dev": "nodemon --config nodemon.json --exec ts-node --project tsconfig.node.json src/server.ts",
-    "build": "tsc --project tsconfig.json",
+    "build": "prisma generate && tsc --project tsconfig.json",
     "start": "node dist/server.js",
     "clean": "rm -rf dist dist-dev",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "postinstall": "prisma generate",
+    "vercel-build": "prisma generate && prisma migrate deploy && tsc"
   },
   "main": "dist/server.js",
   "keywords": [],

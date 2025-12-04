@@ -4,9 +4,6 @@
     "module": "commonjs",
     "outDir": "./dist-dev",
     "rootDir": "./src",
-    "paths": {
-      "@prisma/client": ["./src/generated/prisma"]
-    }
   },  
   "include": ["src/**/*"],
   "exclude": ["node_modules"]

@@ -5,7 +5,7 @@ import { prisma } from '../lib/prisma';
 import { hashPassword, comparePassword } from '../utils/hash';
 import { generateAccessToken, generateRefreshToken } from '../utils/jwt';
 import { sendResponse } from '../utils/response';
-import { Role } from '../generated/prisma';
+import { Role } from '@prisma/client';
 import AppError from '../middleware/errorHandler';
 import Email from '../utils/email';
 import { generateOTP, hashOTP } from '../utils/otp';

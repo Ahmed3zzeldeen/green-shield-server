@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import AppError from "./errorHandler";
-import { Role, User } from '../generated/prisma';
+import { Role, User } from '@prisma/client';
 
 const allowedTo = (...roles: Role[]) => {
   return (req: Request & { currentUser: User }, res: Response, next: NextFunction) => {
