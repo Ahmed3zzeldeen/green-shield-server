@@ -7,7 +7,7 @@ import { errorHandler } from "./middleware/errorHandler";
 import authRoutes from "./routes/auth.routes";
 import imageRoutes from "./routes/image.routes";
 import farmRoutes from "./routes/farm.routes";
-import predictionRoutes from "./routes/predictionRoutes";
+import predictionRoutes from "./routes/prediction.routes";
 
 const app = express();
 
@@ -48,3 +48,4 @@ app.get("/health", (_req, res) => {
 });
 
 export default app;
+

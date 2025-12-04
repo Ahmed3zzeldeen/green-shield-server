@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { prisma } from "../lib/prisma";
 import { sendResponse } from "../utils/response";
 import AppError from "../middleware/errorHandler";
-import { Role } from "../generated/prisma";
+import { Role } from "@prisma/client";
 
 // POST /api/farms
 export const addFarm = async (
