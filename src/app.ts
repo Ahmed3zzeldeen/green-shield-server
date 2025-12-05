@@ -1,4 +1,3 @@
-// src/app.ts
 import express from "express";
 import cors from "cors";
 import path from "path";
@@ -29,15 +28,14 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   errorHandler(err, req, res);
 });
 
-app.get("/", (req, res) => {
+app.get("/", (_req, res) => {
   res.send("Welcome to the Green Shield Project API");
 });
 
 // Health check
-app.get("/health", (req, res) => {
+app.get("/health", (_req, res) => {
   res.json({ status: "OK", timestamp: new Date().toISOString() });
 });
-
 
 
 export default app;
