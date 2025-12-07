@@ -30,4 +30,6 @@ COPY --from=builder /app/dist ./dist
 
 COPY --from=builder /app/prisma ./prisma
 
+EXPOSE 5000
+
 ENTRYPOINT [ "node", "dist/server.js" ]
