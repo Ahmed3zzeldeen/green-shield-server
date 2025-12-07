@@ -6,6 +6,7 @@ import { errorHandler } from "./middleware/errorHandler";
 
 import authRoutes from "./routes/authRoutes";
 import imageRoutes from "./routes/imageRoutes";
+import predictionRoutes from "./routes/predictionRoutes";
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/images", imageRoutes);
+app.use("/api/predictions", predictionRoutes);
 
 // Error Handling Middleware
 app.use(
