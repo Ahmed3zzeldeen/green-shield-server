@@ -11,7 +11,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "postinstall": "prisma generate",
-    "vercel-build": "prisma generate && prisma migrate deploy && tsc"
+    "vercel-build": "prisma generate && prisma migrate deploy && tsc",
+    "generate-ai-client": "orval"
   },
   "main": "dist/server.js",
   "keywords": [],
@@ -20,6 +21,7 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.0.1",
     "@prisma/client": "^7.0.1",
+    "axios": "^1.13.2",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
@@ -45,6 +47,7 @@
     "@types/pg": "^8.15.6",
     "@types/pug": "^2.0.10",
     "nodemon": "^3.1.10",
+    "orval": "^7.17.0",
     "prisma": "^7.0.1",
     "ts-node": "^10.9.2",
     "tsx": "^4.20.6",
