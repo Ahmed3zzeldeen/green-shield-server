@@ -14,8 +14,6 @@ COPY prisma.config.ts ./
 
 COPY src ./src/
 
-COPY .env ./
-
 RUN npm ci
 
 RUN npm run build
