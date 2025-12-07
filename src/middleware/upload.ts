@@ -49,4 +49,12 @@ const upload = multer({
   fileFilter,
 });
 
+// In-memory storage for prediction routes
+const uploadMemory = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter,
+});
+
 export default upload;
+export { uploadMemory };
