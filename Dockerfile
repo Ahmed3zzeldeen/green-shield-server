@@ -4,13 +4,15 @@ WORKDIR /app
 
 COPY package.json package-lock.json ./
 
-COPY /prisma ./
+COPY prisma ./prisma/
 
 COPY tsconfig.json ./
 
 COPY tsconfig.node.json ./
 
 COPY prisma.config.ts ./
+
+COPY src ./src/
 
 COPY .env ./
 
@@ -25,5 +27,7 @@ WORKDIR /app
 COPY --from=builder /app/node_modules ./
 
 COPY --from=builder /app/dist ./dist
+
+COPY --from=builder /app/prisma ./prisma
 
 ENTRYPOINT [ "node", "dist/server.js" ]
