@@ -1,6 +1,6 @@
 import { Router } from "express";
 import upload from "../middleware/upload";
-import { uploadImage, getImageById } from "../controllers/imageController";
+import { uploadImage, getImageById } from "../controllers/image.controller";
 import { asyncWrapper } from "../middleware/asyncWrapper";
 
 const router = Router();

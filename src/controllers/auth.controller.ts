@@ -11,90 +11,102 @@ import Email from '../utils/email';
 import { generateOTP, hashOTP } from '../utils/otp';
 
 // Password regex: 6+ chars, 1 uppercase, 1 lowercase, 1 digit, 1 special
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+const passwordRegex =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
 
 export const signupValidation = [
-  body('firstName').trim().notEmpty().withMessage('First name is required'),
-  body('lastName').trim().notEmpty().withMessage('Last name is required'),
-  body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
-  body('username').trim().notEmpty().withMessage('Username is required'),
-  body('password')
+  body("firstName").trim().notEmpty().withMessage("First name is required"),
+  body("lastName").trim().notEmpty().withMessage("Last name is required"),
+  body("email")
+    .isEmail()
+    .normalizeEmail()
+    .withMessage("Valid email is required"),
+  body("username").trim().notEmpty().withMessage("Username is required"),
+  body("password")
     .matches(passwordRegex)
-    .withMessage('Password must be 6+ chars and contain uppercase, lowercase, digit, and special char'),
-  body('role').isIn(Object.values(Role)).optional(),
+    .withMessage(
+      "Password must be 6+ chars and contain uppercase, lowercase, digit, and special char"
+    ),
+  body("role").isIn(Object.values(Role)).optional(),
 
   // Conditional validation
-  body('farmName').custom((value, { req }) => {
+  body("farmName").custom((value, { req }) => {
     if (req.body.role === Role.FARMER && !value)
-      throw new Error('Farm name is required for farmers');
+      throw new Error("Farm name is required for farmers");
     return true;
   }),
-  body('farmAddress').custom((value, { req }) => {
+  body("farmAddress").custom((value, { req }) => {
     if (req.body.role === Role.FARMER && !value)
-      throw new Error('Farm address is required for farmers');
+      throw new Error("Farm address is required for farmers");
     return true;
   }),
-  body('state').custom((value, { req }) => {
+  body("state").custom((value, { req }) => {
     if (req.body.role === Role.GOVERNMENT && !value)
-      throw new Error('State is required for government users');
+      throw new Error("State is required for government users");
     return true;
   }),
-  body('city').custom((value, { req }) => {
+  body("city").custom((value, { req }) => {
     if (req.body.role === Role.GOVERNMENT && !value)
-      throw new Error('City is required for government users');
+      throw new Error("City is required for government users");
     return true;
   }),
 ];
 
 export const loginValidation = [
-  body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
-  body('password').notEmpty().withMessage('Password is required'),
+  body("email")
+    .isEmail()
+    .normalizeEmail()
+    .withMessage("Valid email is required"),
+  body("password").notEmpty().withMessage("Password is required"),
 ];
 
 export const forgotPasswordValidation = [
-  body('email')
+  body("email")
     .isEmail()
     .normalizeEmail()
-    .withMessage('Valid email is required'),
+    .withMessage("Valid email is required"),
 ];
 
 export const resetPasswordValidation = [
-  body('resetPasswordOtp')
+  body("resetPasswordOtp")
     .isLength({ min: 6, max: 6 })
-    .withMessage('Valid 6-digit code is required'),
-  body('password').matches(passwordRegex)
+    .withMessage("Valid 6-digit code is required"),
+  body("password")
+    .matches(passwordRegex)
     .withMessage(
-      'New password must be 6+ chars and contain uppercase, lowercase, digit, and special char'
+      "New password must be 6+ chars and contain uppercase, lowercase, digit, and special char"
     ),
 ];
 
 export const changePasswordValidation = [
-  body('currentPassword').notEmpty().withMessage('Current password is required'),
-  body('newPassword').matches(passwordRegex)
+  body("currentPassword")
+    .notEmpty()
+    .withMessage("Current password is required"),
+  body("newPassword")
+    .matches(passwordRegex)
     .withMessage(
-      'New password must be 6+ chars and contain uppercase, lowercase, digit, and special char'
+      "New password must be 6+ chars and contain uppercase, lowercase, digit, and special char"
     ),
 ];
 
 export const sendVerificationEmailValidation = [
-  body('email')
+  body("email")
     .isEmail()
     .normalizeEmail()
-    .withMessage('Valid email is required'),
+    .withMessage("Valid email is required"),
 ];
 
 export const confirmEmailValidation = [
-  body('emailVerificationOtp')
+  body("emailVerificationOtp")
     .isLength({ min: 6, max: 6 })
-    .withMessage('Verification code must be 6 digits'),
+    .withMessage("Verification code must be 6 digits"),
 ];
-
 
 export const signup = async (req: Request, res: Response) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return sendResponse(res, 400, {
-      message: 'Validation failed',
+      message: "Validation failed",
       errors: errors.array(),
     });
   }
@@ -105,22 +117,18 @@ export const signup = async (req: Request, res: Response) => {
     email,
     username,
     password,
-    role = 'FARMER',
-    farmName,
-    farmAddress,
-    state,
-    city,
+    role = "FARMER",
   } = req.body;
 
   const existingEmail = await prisma.user.findUnique({ where: { email } });
   if (existingEmail)
-    return sendResponse(res, 400, { message: 'Email already exists' });
+    return sendResponse(res, 400, { message: "Email already exists" });
 
   const existingUsername = await prisma.user.findUnique({
     where: { username },
   });
   if (existingUsername)
-    return sendResponse(res, 400, { message: 'Username already exists' });
+    return sendResponse(res, 400, { message: "Username already exists" });
 
   const hashedPassword = await hashPassword(password);
 
@@ -132,10 +140,6 @@ export const signup = async (req: Request, res: Response) => {
       username,
       password: hashedPassword,
       role: role as Role,
-      farmName: role === 'FARMER' ? farmName : null,
-      farmAddress: role === 'FARMER' ? farmAddress : null,
-      state: role === 'GOVERNMENT' ? state : null,
-      city: role === 'GOVERNMENT' ? city : null,
     },
   });
 
@@ -155,14 +159,14 @@ export const signup = async (req: Request, res: Response) => {
     ).sendEmailVerification();
   } catch (error) {
     // we skipped failure because email verification is (non-critical)
-    console.log('Failed to send verification email (non-critical):', error);
+    console.log("Failed to send verification email (non-critical):", error);
   }
 
   const accessToken = generateAccessToken({ id: user.id, role: user.role });
   const refreshToken = generateRefreshToken({ id: user.id });
 
   return sendResponse(res, 201, {
-    message: 'User registered successfully',
+    message: "User registered successfully",
     data: {
       token: { access: accessToken, refresh: refreshToken },
       user: {
@@ -187,7 +191,7 @@ export const login = async (req: Request, res: Response) => {
   // is user exists
   const userExists = await prisma.user.findUnique({ where: { email } });
   if (!userExists)
-    return sendResponse(res, 400, { message: 'Invalid credentials' });
+    return sendResponse(res, 400, { message: "Invalid credentials" });
 
   const user = await prisma.user.findUnique({
     where: { email },
@@ -203,7 +207,7 @@ export const login = async (req: Request, res: Response) => {
   });
 
   if (!user || !(await comparePassword(password, user.password))) {
-    return sendResponse(res, 400, { message: 'Invalid credentials' });
+    return sendResponse(res, 400, { message: "Invalid credentials" });
   }
 
   const accessToken = generateAccessToken({ id: user.id, role: user.role });
@@ -219,7 +223,7 @@ export const login = async (req: Request, res: Response) => {
         email,
         username: user.username,
         role: user.role,
-        avatar: user.avatar || '/profile.png',
+        avatar: user.avatar || "/profile.png",
       },
     },
   });
@@ -237,14 +241,14 @@ export const refreshToken = async (
     process.env.JWT_REFRESH_SECRET!,
     async (err: VerifyErrors | null, decoded: any) => {
       if (err) {
-        const error = AppError.create('Invalid refresh token', 401);
+        const error = AppError.create("Invalid refresh token", 401);
         return next(error);
       }
       const foundUser = await prisma.user.findUnique({
         where: { id: decoded.id },
       });
       if (!foundUser) {
-        const error = AppError.create('User not found', 404);
+        const error = AppError.create("User not found", 404);
         return next(error);
       }
 
@@ -253,13 +257,13 @@ export const refreshToken = async (
         username: foundUser.username,
         id: foundUser.id,
         role: foundUser.role,
-        expiryTime: '7d',
+        expiryTime: "7d",
       });
 
       const refreshToken = generateRefreshToken({
         username: foundUser.username,
         id: foundUser.id,
-        expiryTime: '7d',
+        expiryTime: "7d",
       });
       const UserData = {
         id: foundUser.id,
@@ -276,7 +280,7 @@ export const refreshToken = async (
           user: UserData,
         },
         status: 200,
-        message: 'Token refreshed successfully',
+        message: "Token refreshed successfully",
       });
     }
   );
@@ -287,22 +291,34 @@ export const logout = async (req: Request, res: Response) => {
   if (!cookie?.jwt) {
     return res.sendStatus(204); // No content
   }
-  res.clearCookie('jwt', {
+  res.clearCookie("jwt", {
     httpOnly: true, // client-side js cannot access the cookie
-    secure: process.env.NODE_ENV === 'production', // only send cookie over https
-    sameSite: 'none', // only send cookie if the request is coming from the same origin
+    secure: process.env.NODE_ENV === "production", // only send cookie over https
+    sameSite: "none", // only send cookie if the request is coming from the same origin
   });
 
   res.json({
     status: 200,
-    message: 'Logged out successfully',
+    message: "Logged out successfully",
   });
 };
 
-export const forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
+export const forgotPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return next(AppError.create(errors.array().map(err => err.msg).join(', '), 400));
+    return next(
+      AppError.create(
+        errors
+          .array()
+          .map((err) => err.msg)
+          .join(", "),
+        400
+      )
+    );
   }
 
   const { email } = req.body;
@@ -313,7 +329,7 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
 
   if (!user) {
     return sendResponse(res, 200, {
-      message: 'If your email exists, we sent a code.',
+      message: "If your email exists, we sent a code.",
       data: null,
     });
   }
@@ -332,7 +348,7 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
   try {
     await new Email(user, otp).sendPasswordReset();
     return sendResponse(res, 200, {
-      message: 'Password reset code sent to your email.',
+      message: "Password reset code sent to your email.",
       data: null,
     });
   } catch (error) {
@@ -340,10 +356,9 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
       where: { id: user.id },
       data: { resetPasswordOtp: null, resetPasswordExpires: null },
     });
-    return next(AppError.create('Failed to send email', 500));
+    return next(AppError.create("Failed to send email", 500));
   }
 };
-
 
 export const resetPassword = async (
   req: Request,
@@ -352,7 +367,15 @@ export const resetPassword = async (
 ) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return next(AppError.create(errors.array().map(err => err.msg).join(', '), 400));
+    return next(
+      AppError.create(
+        errors
+          .array()
+          .map((err) => err.msg)
+          .join(", "),
+        400
+      )
+    );
   }
 
   const { password, resetPasswordOtp } = req.body;
@@ -370,7 +393,7 @@ export const resetPassword = async (
     });
 
     if (!user) {
-      return next(AppError.create('Invalid or expired code', 400));
+      return next(AppError.create("Invalid or expired code", 400));
     }
 
     const hashedPassword = await hashPassword(password);
@@ -385,14 +408,13 @@ export const resetPassword = async (
     });
 
     return sendResponse(res, 200, {
-      message: 'Password has been reset successfully.',
+      message: "Password has been reset successfully.",
       data: null,
     });
   } catch (error) {
-    return next(AppError.create('Server error during password reset', 500));
+    return next(AppError.create("Server error during password reset", 500));
   }
 };
-
 
 export const changePassword = async (
   req: Request & { currentUser?: { id: string } },
@@ -401,7 +423,15 @@ export const changePassword = async (
 ) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return next(AppError.create(errors.array().map(err => err.msg).join(', '), 400));
+    return next(
+      AppError.create(
+        errors
+          .array()
+          .map((err) => err.msg)
+          .join(", "),
+        400
+      )
+    );
   }
 
   const { currentPassword, newPassword } = req.body;
@@ -414,7 +444,7 @@ export const changePassword = async (
     });
 
     if (!user) {
-      return next(AppError.create('User not found', 404));
+      return next(AppError.create("User not found", 404));
     }
 
     const isCorrectPassword = await comparePassword(
@@ -423,7 +453,7 @@ export const changePassword = async (
     );
     if (!isCorrectPassword) {
       return sendResponse(res, 400, {
-        message: 'Incorrect current password',
+        message: "Incorrect current password",
       });
     }
 
@@ -435,23 +465,35 @@ export const changePassword = async (
     });
 
     return sendResponse(res, 200, {
-      message: 'Password changed successfully',
+      message: "Password changed successfully",
       data: null,
     });
   } catch (error) {
-    return next(AppError.create('Failed to change password', 500));
+    return next(AppError.create("Failed to change password", 500));
   }
 };
 
-export const sendVerificationEmail = async (req: Request, res: Response, next: NextFunction) => {
+export const sendVerificationEmail = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return next(AppError.create(errors.array().map(err => err.msg).join(', '), 400));
+    return next(
+      AppError.create(
+        errors
+          .array()
+          .map((err) => err.msg)
+          .join(", "),
+        400
+      )
+    );
   }
   const { email } = req.body;
 
   if (!email) {
-    return next(AppError.create('Email is required', 400));
+    return next(AppError.create("Email is required", 400));
   }
 
   const user = await prisma.user.findUnique({
@@ -461,14 +503,15 @@ export const sendVerificationEmail = async (req: Request, res: Response, next: N
 
   if (!user) {
     return sendResponse(res, 200, {
-      message: 'If your email is registered, a verification code has been sent.',
+      message:
+        "If your email is registered, a verification code has been sent.",
       data: null,
     });
   }
 
   if (user.isEmailVerified) {
     return sendResponse(res, 400, {
-      message: 'Email is already verified',
+      message: "Email is already verified",
       data: null,
     });
   }
@@ -488,7 +531,7 @@ export const sendVerificationEmail = async (req: Request, res: Response, next: N
     await new Email(user, otp).sendEmailVerification();
 
     return sendResponse(res, 200, {
-      message: 'Verification code sent to your email',
+      message: "Verification code sent to your email",
       data: null,
     });
   } catch (error) {
@@ -499,18 +542,34 @@ export const sendVerificationEmail = async (req: Request, res: Response, next: N
         emailVerificationExpires: null,
       },
     });
-    return next(AppError.create('Failed to send verification email', 500));
+    return next(AppError.create("Failed to send verification email", 500));
   }
 };
 
-export const resendVerificationEmail = async (req: Request, res: Response, next: NextFunction) => {
+export const resendVerificationEmail = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   return sendVerificationEmail(req, res, next);
 };
 
-export const confirmEmail = async (req: Request, res: Response, next: NextFunction) => {
+export const confirmEmail = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return next(AppError.create(errors.array().map(err => err.msg).join(', '), 400));
+    return next(
+      AppError.create(
+        errors
+          .array()
+          .map((err) => err.msg)
+          .join(", "),
+        400
+      )
+    );
   }
 
   const { emailVerificationOtp } = req.body;
@@ -526,7 +585,7 @@ export const confirmEmail = async (req: Request, res: Response, next: NextFuncti
   });
 
   if (!user) {
-    return next(AppError.create('Invalid or expired verification code', 400));
+    return next(AppError.create("Invalid or expired verification code", 400));
   }
 
   await prisma.user.update({
@@ -539,7 +598,7 @@ export const confirmEmail = async (req: Request, res: Response, next: NextFuncti
   });
 
   return sendResponse(res, 200, {
-    message: 'Email verified successfully',
+    message: "Email verified successfully",
     data: null,
   });
 };

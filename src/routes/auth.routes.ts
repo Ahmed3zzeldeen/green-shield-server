@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { signup, signupValidation, login, loginValidation, refreshToken, logout, resetPassword, forgotPassword, changePassword, forgotPasswordValidation, resetPasswordValidation, changePasswordValidation, sendVerificationEmail, confirmEmail, resendVerificationEmail, sendVerificationEmailValidation, confirmEmailValidation } from '../controllers/authController';
+import { signup, signupValidation, login, loginValidation, refreshToken, logout, resetPassword, forgotPassword, changePassword, forgotPasswordValidation, resetPasswordValidation, changePasswordValidation, sendVerificationEmail, confirmEmail, resendVerificationEmail, sendVerificationEmailValidation, confirmEmailValidation } from '../controllers/auth.controller';
 import { asyncWrapper } from '../middleware/asyncWrapper';
 import { verifyRefToken, verifyToken } from '../middleware/verifyToken';
 

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { asyncWrapper } from '../middleware/asyncWrapper';
-import { createScan } from '../controllers/predictionController';
+import { createScan } from '../controllers/prediction.controller';
 import { uploadMemory } from '../middleware/upload';
 
 const router = Router();
