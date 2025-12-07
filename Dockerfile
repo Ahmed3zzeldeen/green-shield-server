@@ -14,6 +14,8 @@ COPY prisma.config.ts ./
 
 COPY src ./src/
 
+ARG DATABASE_URL
+
 RUN npm ci
 
 RUN npm run build
