@@ -1,6 +1,7 @@
-import { S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const s3Client = new S3Client({
   region: process.env.AWS_DEFAULT_REGION!,
@@ -18,7 +19,7 @@ export const uploadToS3 = async (
 ): Promise<{ url: string; key: string }> => {
   const timestamp = Date.now();
   const random = Math.floor(Math.random() * 10000);
-  const ext = file.originalname.split(".").pop();
+  const ext = file.originalname.split(".").pop()?.toLowerCase() || "jpg";
   const key = `${folder}/${timestamp}_${random}.${ext}`;
 
   const upload = new Upload({
@@ -47,6 +48,14 @@ export const deleteFromS3 = async (key: string) => {
     Key: key,
   });
   await s3Client.send(command);
+};
+
+export const getPresignedUrl = async (key: string, expiresIn = 3600) => {
+  const command = new GetObjectCommand({
+    Bucket: process.env.AWS_S3_BUCKET_NAME!,
+    Key: key,
+  });
+  return await getSignedUrl(s3Client, command, { expiresIn });
 };
 
 export { s3Client };
