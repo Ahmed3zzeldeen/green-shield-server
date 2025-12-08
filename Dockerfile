@@ -14,6 +14,8 @@ COPY prisma.config.ts ./
 
 COPY src ./src/
 
+COPY src/views ./src/views
+
 ARG DATABASE_URL
 
 RUN npm ci
@@ -31,6 +33,8 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
+
+COPY --from=builder /app/src/views ./views
 
 EXPOSE 5000
 
