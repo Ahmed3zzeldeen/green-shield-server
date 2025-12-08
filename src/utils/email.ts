@@ -45,8 +45,7 @@ export default class Email {
 
   // Send the actual email
   private async send(template: TemplateType, subject: string) {
-    const templatePath = path.join(__dirname, "..", "views", "email", `${template}.pug`);
-
+    const templatePath = path.join(process.cwd(), "views", "email", `${template}.pug`);
     // 1. Render HTML from Pug template
     const html = pug.renderFile(templatePath, {
       firstName: this.firstName,
