@@ -4,8 +4,9 @@ import path from "path";
 import corsOptions from "./config/corsOptions";
 import { errorHandler } from "./middleware/errorHandler";
 
-import authRoutes from "./routes/authRoutes";
-import imageRoutes from "./routes/imageRoutes";
+import authRoutes from "./routes/auth.routes";
+import imageRoutes from "./routes/image.routes";
+import farmRoutes from "./routes/farm.routes";
 import predictionRoutes from "./routes/predictionRoutes";
 
 const app = express();
@@ -23,6 +24,7 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use("/api/auth", authRoutes);
 app.use("/api/images", imageRoutes);
 app.use("/api/predictions", predictionRoutes);
+app.use("/api/farms", farmRoutes);
 
 // Error Handling Middleware
 app.use(
@@ -46,4 +48,3 @@ app.get("/health", (_req, res) => {
 });
 
 export default app;
-

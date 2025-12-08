@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { aiService } from "../services/predictionService";
+import { aiService } from "../services/prediction.service";
 import { PredictOutput } from "../ai/client";
 
 export const createScan = async (

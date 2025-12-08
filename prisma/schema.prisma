@@ -28,14 +28,6 @@ model User {
   password  String
   role      Role   @default(FARMER)
 
-  // Conditional fields
-  farmName    String?
-  farmAddress String?
-  state       String?
-  city        String?
-  longitude   Float?
-  latitude    Float?
-
   // Verification & metadata
   isEmailVerified Boolean @default(false)
   avatar          String? @default("/avatars/default.png")
@@ -51,8 +43,26 @@ model User {
   deletedAt DateTime?
 
   // Relations
+  farms       Farm[]
   images      UploadedImage[]
   predictions Prediction[]
+}
+
+model Farm {
+  id        String  @id @default(uuid())
+  name      String
+  address   String?
+  state     String?
+  city      String?
+  longitude Float?
+  latitude  Float?
+
+  // Relation to User
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum SeverityLevel {
