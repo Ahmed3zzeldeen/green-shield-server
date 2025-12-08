@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import { aiService } from "../services/prediction.service";
 import { PredictOutput } from "../ai/client";
-import { uploadToS3 } from "../lib/s3";
+import { deleteFromS3, getPresignedUrl, uploadToS3 } from "../lib/s3";
 import { prisma } from "../lib/prisma";
-import AppError from '../middleware/errorHandler';
+import AppError from "../middleware/errorHandler";
 
 export const createScan = async (
-  req: Request & { file?: Express.Multer.File , currentUser?: { id: string } },
+  req: Request & { file?: Express.Multer.File; currentUser?: { id: string } },
   res: Response,
   next: NextFunction
 ) => {
@@ -23,12 +23,13 @@ export const createScan = async (
   });
 
   const aiResponse: PredictOutput = await aiService.predict(imageBlob);
+  const { key } = await uploadToS3(req.file, "scans");
+  const presignedUrl = await getPresignedUrl(key, 3600 * 24); // 24 hour
 
-  const { url, key } = await uploadToS3(req.file, "scans");
   const uploadedImage = await prisma.uploadedImage.create({
     data: {
       userId,
-      url,
+      url: presignedUrl,
       key,
       filename: req.file.originalname,
       mimeType: req.file.mimetype,
@@ -37,7 +38,10 @@ export const createScan = async (
   });
 
   if (!aiResponse || !aiResponse.label) {
-    const error = AppError.create("AI prediction failed but image uploaded successfully we will predict it later stay tuned", 500);
+    const error = AppError.create(
+      "AI prediction failed but image uploaded successfully we will predict it later stay tuned",
+      500
+    );
     return next(error);
   }
 
@@ -103,5 +107,107 @@ export const createScan = async (
         healthy: aiResponse.probability_healthy,
       },
     },
+  });
+};
+
+export const getUserScans = async (req: any, res: Response) => {
+  const userId = req.currentUser.id;
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+
+  const predictions = await prisma.prediction.findMany({
+    where: { userId },
+    orderBy: { predictedAt: "desc" },
+    skip: (page - 1) * limit,
+    take: limit,
+    include: {
+      image: true,
+      disease: {
+        include: { treatments: true },
+      },
+    },
+  });
+
+  const predictionsWithUrls = await Promise.all(
+    predictions.map(async (p) => {
+      if (p.image?.key) {
+        p.image.url = await getPresignedUrl(p.image.key, 3600 * 24);
+      }
+      return p;
+    })
+  );
+
+  const total = await prisma.prediction.count({ where: { userId } });
+
+  return res.status(200).json({
+    success: true,
+    message: "Scan history retrieved successfully",
+    data: {
+      predictions: predictionsWithUrls,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    },
+  });
+};
+
+export const getPredictionById = async (req: any, res: Response) => {
+  const userId = req.currentUser.id;
+  const { predictionId } = req.params;
+
+  const prediction = await prisma.prediction.findFirst({
+    where: {
+      id: predictionId,
+      userId,
+    },
+    include: {
+      image: true,
+      disease: {
+        include: { treatments: true },
+      },
+    },
+  });
+
+  if (!prediction) {
+    return res.status(404).json({
+      success: false,
+      message: "Prediction not found",
+    });
+  }
+
+  return res.status(200).json({
+    success: true,
+    data: prediction,
+  });
+};
+
+export const deletePredictionById = async (req: any, res: Response) => {
+  const userId = req.currentUser.id;
+  const { predictionId } = req.params;
+
+  const prediction = await prisma.prediction.findFirst({
+    where: { id: predictionId, userId },
+    include: { image: true },
+  });
+
+  if (!prediction) {
+    return res.status(404).json({
+      success: false,
+      message: "Prediction not found",
+    });
+  }
+
+  if (prediction.image?.key) {
+    await deleteFromS3(prediction.image.key);
+  }
+
+  await prisma.prediction.delete({ where: { id: predictionId } });
+
+  return res.status(200).json({
+    success: true,
+    message: "Scan deleted successfully",
   });
 };
