@@ -98,6 +98,7 @@ model Treatment {
 
 model UploadedImage {
   id         String   @id @default(uuid())
+  key        String   @unique
   userId     String?
   url        String
   filename   String

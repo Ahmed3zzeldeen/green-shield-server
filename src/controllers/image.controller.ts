@@ -31,8 +31,7 @@ export const uploadImage = async (req: Request, res: Response) => {
         filename,
         mimeType: mimetype,
         size,
-        // TODO: (Optional) link to authenticated user later
-        // userId: req.user?.id,
+        key: new Date().getTime().toString() + "_" + filename,
       },
     });
 

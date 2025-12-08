@@ -143,24 +143,25 @@ export const signup = async (req: Request, res: Response) => {
     },
   });
 
-  try {
-    const otp = generateOTP();
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        emailVerificationOtp: hashOTP(otp),
-        emailVerificationExpires: new Date(Date.now() + 10 * 60 * 1000),
-      },
-    });
+  // FIXME: Enable email verification later because it's take alot of time to send email during signup
+  // try {
+  //   const otp = generateOTP();
+  //   await prisma.user.update({
+  //     where: { id: user.id },
+  //     data: {
+  //       emailVerificationOtp: hashOTP(otp),
+  //       emailVerificationExpires: new Date(Date.now() + 10 * 60 * 1000),
+  //     },
+  //   });
 
-    await new Email(
-      { email: user.email, firstName: user.firstName },
-      otp
-    ).sendEmailVerification();
-  } catch (error) {
-    // we skipped failure because email verification is (non-critical)
-    console.log("Failed to send verification email (non-critical):", error);
-  }
+  //   await new Email(
+  //     { email: user.email, firstName: user.firstName },
+  //     otp
+  //   ).sendEmailVerification();
+  // } catch (error) {
+  //   // we skipped failure because email verification is (non-critical)
+  //   console.log("Failed to send verification email (non-critical):", error);
+  // }
 
   const accessToken = generateAccessToken({ id: user.id, role: user.role });
   const refreshToken = generateRefreshToken({ id: user.id });
@@ -191,7 +192,7 @@ export const login = async (req: Request, res: Response) => {
   // is user exists
   const userExists = await prisma.user.findUnique({ where: { email } });
   if (!userExists)
-    return sendResponse(res, 400, { message: "Invalid credentials" });
+    return sendResponse(res, 400, { message: "User not found" });
 
   const user = await prisma.user.findUnique({
     where: { email },
