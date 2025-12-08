@@ -191,7 +191,7 @@ export const login = async (req: Request, res: Response) => {
   // is user exists
   const userExists = await prisma.user.findUnique({ where: { email } });
   if (!userExists)
-    return sendResponse(res, 400, { message: "Invalid credentials" });
+    return sendResponse(res, 400, { message: "User not found" });
 
   const user = await prisma.user.findUnique({
     where: { email },
