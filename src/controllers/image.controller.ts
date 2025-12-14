@@ -1,14 +1,16 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { prisma } from "../lib/prisma";
-
-//? found the import but don't know what for so I commented it
-// import path from "path";
+import { sendResponse } from "../utils/response";
+import AppError from "../middleware/errorHandler";
 
 /**
  * POST /api/images/upload
  * Upload a maize leaf image
  */
-export const uploadImage = async (req: Request, res: Response) => {
+export const uploadImage = async (
+  req: Request & { currentUser?: { id: string } },
+  res: Response
+) => {
   try {
     if (!req?.file) {
       return res.status(400).json({
@@ -17,7 +19,7 @@ export const uploadImage = async (req: Request, res: Response) => {
       });
     }
 
-    const { originalname, filename, mimetype, size } = req?.file;
+    const { filename, mimetype, size } = req?.file;
 
     // Generate public URL
     const protocol = req.protocol;
@@ -32,6 +34,7 @@ export const uploadImage = async (req: Request, res: Response) => {
         mimeType: mimetype,
         size,
         key: new Date().getTime().toString() + "_" + filename,
+        userId: req.currentUser?.id,
       },
     });
 
@@ -92,5 +95,38 @@ export const getImageById = async (req: Request, res: Response) => {
       success: false,
       message: "Server error",
     });
+  }
+};
+
+// GET /api/images/history
+export const getImageHistory = async (
+  req: Request & { currentUser?: { id: string } },
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.currentUser) {
+      return sendResponse(res, 401, { message: "Unauthorized" });
+    }
+
+    const images = await prisma.uploadedImage.findMany({
+      where: { userId: req.currentUser.id },
+      orderBy: { uploadedAt: "desc" },
+      select: {
+        id: true,
+        url: true,
+        filename: true,
+        mimeType: true,
+        size: true,
+        uploadedAt: true,
+      },
+    });
+
+    return sendResponse(res, 200, {
+      message: "Image history retrieved successfully",
+      data: images,
+    });
+  } catch (error) {
+    return next(AppError.create("Failed to fetch image history", 500));
   }
 };

@@ -8,6 +8,7 @@ import authRoutes from "./routes/auth.routes";
 import imageRoutes from "./routes/image.routes";
 import farmRoutes from "./routes/farm.routes";
 import predictionRoutes from "./routes/prediction.routes";
+import profileRoutes from "./routes/profile.routes";
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/images", imageRoutes);
 app.use("/api/predictions", predictionRoutes);
 app.use("/api/farms", farmRoutes);
+app.use("/api/profile", profileRoutes);
 
 // Error Handling Middleware
 app.use(
@@ -32,10 +34,10 @@ app.use(
     err: any,
     req: express.Request,
     res: express.Response,
-    next: express.NextFunction,
+    next: express.NextFunction
   ) => {
     errorHandler(err, req, res);
-  },
+  }
 );
 
 app.get("/", (_req, res) => {
@@ -48,4 +50,3 @@ app.get("/health", (_req, res) => {
 });
 
 export default app;
-
