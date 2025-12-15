@@ -4,6 +4,7 @@ import { sendResponse } from "../utils/response";
 import AppError from "../middleware/errorHandler";
 import { Role } from "@prisma/client";
 import { getPresignedUrl, uploadToS3, deleteFromS3 } from "../lib/s3";
+import { selectFields } from "express-validator/lib/field-selection";
 
 // GET /api/profile
 export const getProfile = async (
@@ -26,6 +27,12 @@ export const getProfile = async (
         username: true,
         role: true,
         avatar: true,
+        farms: {
+          select: {
+            name: true,
+            address: true,
+          },
+        },
       },
     });
 
